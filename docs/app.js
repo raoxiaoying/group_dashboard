@@ -5,7 +5,7 @@ const rangeLabel=p=>p.start===p.end?monthLabel(p.start):`${monthLabel(p.start)} 
 const periodText=()=>rangeLabel(period);
 const sign=(v,unit='%',id)=>{if(v===null)return '—';const rounded=Math.round(v*10)/10;return `${rounded>0?'+':''}${rounded.toFixed(1)}${unit}`};
 const tone=v=>v===null?'':v>=0?'up':'down';
-const display=(id,v)=>{const f=D.format(id,v);return `<span class="notranslate" translate="no">${f.number}</span><small>${f.unit}</small>`};
+const display=(id,v)=>{const f=D.format(id,v);return `<span class="metric-digits notranslate" translate="no" role="img" aria-label="${f.number}" data-number="${f.number}"></span><small>${f.unit}</small>`};
 const textValue=(id,v)=>{const f=D.format(id,v);return f.number+f.unit};
 const icon='<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="10" y="4" width="13" height="24" rx="2"/><path d="M10 15H5v13h23V13h-5M14 10h5m-5 6h5m-5 6h5"/></svg>';
 const calendar='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="14" height="12" rx="2"/><path d="M6 3v4m8-4v4M3 9h14"/></svg>';
