@@ -10,9 +10,11 @@ const textValue=(id,v)=>{const f=D.format(id,v);return f.number+f.unit};
 const icon='<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="10" y="4" width="13" height="24" rx="2"/><path d="M10 15H5v13h23V13h-5M14 10h5m-5 6h5m-5 6h5"/></svg>';
 const calendar='<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="14" height="12" rx="2"/><path d="M6 3v4m8-4v4M3 9h14"/></svg>';
 function href(id=null,market=null,p=period){const path=id?`metric/${id}${market?'/'+market:''}`:'home';return `#/${path}?start=${D.monthKey(p.start)}&end=${D.monthKey(p.end)}&mode=${p.mode}`}
+function defaultPeriod(mode){const end=D.latest,start=mode==='range'?Math.floor((end+1)/12)*12:end;return start<=end?{start,end,mode}:null}
 function readRoute(){
   const [path,query='']=location.hash.replace(/^#\/?/,'').split('?'),parts=path.split('/'),q=new URLSearchParams(query);
-  const start=D.monthIndex(q.get('start')||D.monthKey(D.latest)),end=D.monthIndex(q.get('end')||D.monthKey(D.latest));
+  const defaults=defaultPeriod(q.get('mode')==='range'?'range':'single')||defaultPeriod('single');
+  const start=D.monthIndex(q.get('start')||D.monthKey(defaults.start)),end=D.monthIndex(q.get('end')||D.monthKey(defaults.end));
   period=D.validPeriod(start,end)?{start,end,mode:q.get('mode')==='range'||start!==end?'range':'single'}:{start:D.latest,end:D.latest,mode:'single'};
   route={id:parts[0]==='metric'&&D.metrics[parts[1]]?parts[1]:null,market:D.markets.some(m=>m.id===parts[2])?parts[2]:null};
 }
@@ -56,7 +58,7 @@ function storesAnalysis(){
 function render(){readRoute();app.className=route.id?'detail-view':'home-view';app.innerHTML=header()+(route.id?(route.market?storesAnalysis():marketAnalysis()):home())+'<footer>全部为模拟数据 · 未连接业务系统<br>集团 / 市场 / 门店口径一致</footer>';document.title=(route.id?D.metrics[route.id].name+(route.market?' · 门店明细':' · 市场'):'集团看板')+' · 移动端 Demo';bind()}
 function bind(){
   document.getElementById('date-open').onclick=()=>openPeriod(period.mode);
-  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>openPeriod(b.dataset.mode));
+  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>openPeriod(b.dataset.mode,true));
   document.querySelectorAll('[data-info]').forEach(b=>b.onclick=()=>openInfo(b.dataset.info,b));
   document.querySelectorAll('[data-trend-hit]').forEach(target=>{target.onclick=()=>showTrendValue(target);target.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showTrendValue(target)}}});
   document.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{const y=scrollY,key=b.dataset.sort;sort=sortKey===key&&sort==='asc'?'desc':'asc';sortKey=key;render();scrollTo(0,y);document.querySelector(`[data-sort="${key}"]`).focus({preventScroll:true})});
@@ -65,9 +67,11 @@ const dialog=document.getElementById('sheet');
 function showDialog(content,title,focus){returnFocus=focus||document.activeElement;dialog.innerHTML=`<div class="sheet-handle"></div><div class="sheet-head"><h2 id="sheet-title">${title}</h2><button type="button" class="close" aria-label="关闭">×</button></div>${content}`;dialog.querySelector('.close').onclick=()=>dialog.close();dialog.showModal()}
 dialog.addEventListener('close',()=>{if(returnFocus?.isConnected)returnFocus.focus()});dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
 function openInfo(id,focus){const m=D.metrics[id];showDialog(`<span class="sheet-tag">${m.group}</span><h3 class="formula-label">${m.caption}</h3><p class="formula">${m.formula}</p>${m.note?`<p class="sheet-note">${m.note}</p>`:''}<h3 class="formula-label">数据来源</h3><p class="sheet-note">${m.source}</p><p class="demo-note">当前为模拟数据，未连接业务系统。</p>`,m.name+' · 指标说明',focus)}
-function openPeriod(mode){
-  let start=mode==='single'?period.end:period.mode==='single'?Math.max(Math.floor(period.end/12)*12,D.earliest):period.start,end=period.end,active='start',year=Math.floor(period.end/12);
-  showDialog(`<form id="period-form"><div class="sheet-modes" role="group" aria-label="月份查询模式"><button type="button" data-draft-mode="single" aria-pressed="${mode==='single'}">单月查询</button><button type="button" data-draft-mode="range" aria-pressed="${mode==='range'}">累计月份</button></div><div class="date-range-fields"><button type="button" id="pick-start" class="date-endpoint" aria-label="${mode==='single'?'查询月份':'开始月份'}"></button>${mode==='range'?'<span class="date-separator">至</span><button type="button" id="pick-end" class="date-endpoint" aria-label="结束月份"></button>':''}${calendar}</div><div class="month-calendar"><div class="calendar-year"><button type="button" id="year-prev" aria-label="上一年">‹</button><strong id="calendar-year"></strong><button type="button" id="year-next" aria-label="下一年">›</button></div><div id="calendar-months" class="calendar-months" role="group" aria-label="选择月份"></div></div><p class="form-error" id="period-error" role="alert"></p><div class="sheet-actions"><button type="button" class="secondary" id="last-month">恢复上月</button><button class="primary" type="submit">查询</button></div></form>`,'选择统计月份');
+function openPeriod(mode,reset=false){
+  const initial=reset||mode!==period.mode?defaultPeriod(mode):period;
+  if(!initial){showDialog('<p class="sheet-note">当年暂无已结束的完整月份，累计查询从2月起可用。</p>','选择统计月份');return}
+  let {start,end}=initial,active='start',year=Math.floor(end/12);
+  showDialog(`<form id="period-form"><div class="sheet-modes" role="group" aria-label="月份查询模式"><button type="button" data-draft-mode="single" aria-pressed="${mode==='single'}">单月查询</button><button type="button" data-draft-mode="range" aria-pressed="${mode==='range'}">累计月份</button></div><div class="date-range-fields"><button type="button" id="pick-start" class="date-endpoint" aria-label="${mode==='single'?'查询月份':'开始月份'}"></button>${mode==='range'?'<span class="date-separator">至</span><button type="button" id="pick-end" class="date-endpoint" aria-label="结束月份"></button>':''}${calendar}</div><div class="month-calendar"><div class="calendar-year"><button type="button" id="year-prev" aria-label="上一年">‹</button><strong id="calendar-year"></strong><button type="button" id="year-next" aria-label="下一年">›</button></div><div id="calendar-months" class="calendar-months" role="group" aria-label="选择月份"></div></div><p class="form-error" id="period-error" role="alert"></p><div class="sheet-actions"><button type="button" class="secondary" id="last-month">恢复默认</button><button class="primary" type="submit">查询</button></div></form>`,'选择统计月份');
   function draw(){
     document.getElementById('pick-start').textContent=D.monthKey(mode==='single'?end:start);
     document.getElementById('pick-start').setAttribute('aria-pressed',active==='start');
@@ -81,8 +85,8 @@ function openPeriod(mode){
   document.getElementById('pick-start').onclick=()=>{active='start';year=Math.floor(start/12);draw()};
   if(mode==='range')document.getElementById('pick-end').onclick=()=>{active='end';year=Math.floor(end/12);draw()};
   document.getElementById('year-prev').onclick=()=>{year--;draw()};document.getElementById('year-next').onclick=()=>{year++;draw()};
-  dialog.querySelectorAll('[data-draft-mode]').forEach(b=>b.onclick=()=>{const focus=returnFocus;dialog.close();openPeriod(b.dataset.draftMode);returnFocus=focus});
-  document.getElementById('last-month').onclick=()=>applyPeriod({start:D.latest,end:D.latest,mode:'single'});
+  dialog.querySelectorAll('[data-draft-mode]').forEach(b=>b.onclick=()=>{const focus=returnFocus;dialog.close();openPeriod(b.dataset.draftMode,true);returnFocus=focus});
+  document.getElementById('last-month').onclick=()=>{const defaults=defaultPeriod(mode);if(defaults)applyPeriod(defaults)};
   document.getElementById('period-form').onsubmit=e=>{e.preventDefault();if(!D.validPeriod(start,end)){document.getElementById('period-error').textContent='请选择有效月份，开始月份不能晚于结束月份。';return}applyPeriod({start,end,mode})};
   draw();
 }

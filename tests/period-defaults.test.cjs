@@ -1,0 +1,20 @@
+const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),base=require('../dist/data.js');
+const D={...base,latest:base.monthIndex('2026-09'),earliest:base.monthIndex('2024-10')};
+const elements=new Map();
+function element(id){if(!elements.has(id))elements.set(id,{innerHTML:'',textContent:'',attrs:{},setAttribute(k,v){this.attrs[k]=v},addEventListener(){},showModal(){},close(){},querySelector(){return element('child')},querySelectorAll(){return[]}});return elements.get(id)}
+const ctx={DashboardData:D,document:{getElementById:element,querySelectorAll:()=>[],title:''},location:{hash:'#/home'},window:{addEventListener(){}},URLSearchParams};
+vm.createContext(ctx);vm.runInContext(fs.readFileSync('dist/app.js','utf8'),ctx);
+const run=s=>vm.runInContext(s,ctx);
+assert.equal(run('period.start'),D.latest);
+ctx.location.hash='#/home?mode=range';run('readRoute()');assert.equal(run('period.start'),D.monthIndex('2026-01'));assert.equal(run('period.end'),D.latest);
+ctx.location.hash='#/metric/revenue/east?start=2025-03&end=2025-05&mode=range';run('readRoute();openPeriod("range")');
+assert.equal(element('pick-start').textContent,'2025-03');assert.equal(element('pick-end').textContent,'2025-05');
+run('openPeriod("range",true)');assert.equal(element('pick-start').textContent,'2026-01');assert.equal(element('pick-end').textContent,'2026-09');
+element('period-form').onsubmit({preventDefault(){}});assert.equal(ctx.location.hash,'#/metric/revenue/east?start=2026-01&end=2026-09&mode=range');
+run('readRoute();openPeriod("single",true)');assert.equal(element('pick-start').textContent,'2026-09');
+element('period-form').onsubmit({preventDefault(){}});assert.equal(ctx.location.hash,'#/metric/revenue/east?start=2026-09&end=2026-09&mode=single');
+ctx.location.hash='#/home?start=2025-03&end=2025-05&mode=range';run('readRoute();openPeriod("range")');element('last-month').onclick();assert.equal(ctx.location.hash,'#/home?start=2026-01&end=2026-09&mode=range');
+ctx.location.hash='#/home?start=2025-05&end=2025-05&mode=single';run('readRoute();openPeriod("single")');element('last-month').onclick();assert.equal(ctx.location.hash,'#/home?start=2026-09&end=2026-09&mode=single');
+D.latest=D.monthIndex('2027-01');run('openPeriod("range",true)');assert.equal(element('pick-start').textContent,'2027-01');assert.equal(element('pick-end').textContent,'2027-01');
+D.latest=D.monthIndex('2026-12');assert.equal(run('defaultPeriod("range")'),null);run('openPeriod("range",true)');assert(element('sheet').innerHTML.includes('当年暂无已结束的完整月份'));
+console.log('通过：单月上月、累计当年1月至上月、切换与重置默认、保留自选日期及穿透路径、跨年边界。');
