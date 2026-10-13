@@ -29,7 +29,7 @@ assert.equal(D.format('turnover',1).unit,'次');
 close(a.labor,a.wage+a.subsidy+a.social+a.fund);
 close(D.value('mom',D.stores,p),(a.netRevenue-b.netRevenue)/b.netRevenue*100);
 close(D.value('yoy',D.stores,p),(a.netRevenue-y.netRevenue)/y.netRevenue*100);
-assert.equal(D.metrics.cagr.name,'同比');assert.equal(D.metrics.growth.name,'可比同比');
+assert.equal(D.metrics.cagr.name,'增长率');assert.equal(D.metrics.growth.name,'增速');
 for(const selected of [D.stores,...D.markets.map(m=>D.select(m.id)),...D.stores.map(s=>[s])]){
   for(const window of [p,{start:p.end,end:p.end},opening]){
     assert.equal(D.value('cagr',selected,window),D.value('yoy',selected,window));
