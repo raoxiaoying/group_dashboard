@@ -1,0 +1,33 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>集团看板 Quick BI 移动端配置对照</title><style>body{font:15px/1.8 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;color:#1f2329;max-width:1000px;margin:40px auto;padding:0 22px}h1{font-size:26px}h2{font-size:20px;margin-top:32px}table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid #dce1e8;padding:12px;text-align:left;vertical-align:top}th{background:#f2f4f7}a{color:#1677ff}code{background:#f5f6f8;padding:2px 4px}li{margin:8px 0}@media(max-width:600px){body{margin:20px auto;padding:0 12px}table{font-size:12px}th,td{padding:8px}}</style><body>
+<h1>集团看板 Quick BI 移动端配置对照</h1>
+<p>更新日期：2026年10月13日。本次将 Demo 的展示设计限制在 Quick BI 原生组件的可配置范围，供实施人员按组件重建。本文件与 Demo 均不是 Quick BI 可导入模板；尚未登录客户租户完成原生搭建或版本验收。数据仍为模拟数据。</p>
+<h2>组件与页面对应</h2>
+<table><thead><tr><th>页面位置</th><th>Quick BI 组件</th><th>实施配置</th></tr></thead><tbody>
+<tr><td>集团标题与模块名称</td><td>富文本／组件标题</td><td>白底深色标题；分区标题左侧蓝色修饰。IPO 数据、管理数据、经营中心使用内置素材图标或图片控件。按租户素材选择近似图标，不要求重写 SVG。</td></tr>
+<tr><td>单月／累计切换</td><td>Tab 容器</td><td>两个 Tab 各放一套关联图表与日期查询。单月 Tab 使用“年月、单月”；累计 Tab 使用“年月、月区间”。Tab 内筛选只关联当前 Tab 的组件；不依赖切换另一个 Tab 后自动继承状态。</td></tr>
+<tr><td>统计月份</td><td>日期查询控件</td><td>单月默认上月，累计从当前查询结束月份所在年的1月开始，结束月份沿用当前选择；当前 Demo 可选最近24个月。保留查询与重置操作。原生日期弹层直接使用产品提供的样式，不复刻 HTML 的系统月份输入框。</td></tr>
+<tr><td>首页14项指标</td><td>指标看板</td><td>选择主副布局，主指标为本期值，副指标为环比或较上期百分点变化。移动端每行两个指标块，白色背景，8px间距。不同单位分块配置；需要不同跳转目标时使用独立指标看板组件。</td></tr>
+<tr><td>集团／市场汇总</td><td>指标看板</td><td>主值＋两个副指标（上期比较、去年同期比较），金额用万元、比率用%、翻台率用次、人时用元/小时。比率变化为百分点，不对百分比再求简单平均。</td></tr>
+<tr><td>近12个月趋势</td><td>线图</td><td>维度为月份，按年月升序；主线用蓝色实线及标记点，空值断开。显示全部12个月标签，约45°倾斜。开启移动端工具提示悬浮气泡，展示月份与值；原生工具提示承担点击读数。</td></tr>
+<tr><td>市场对比</td><td>交叉表</td><td>行维度为市场，度量为本期值和比较值。浅灰表头、隔行底色、底部集团合计；市场名或本期值配置跳转至门店页。替代原定制卡片及装饰进度条。</td></tr>
+<tr><td>门店明细</td><td>交叉表</td><td>行维度为门店，度量为本期值和比较值。启用“仅全局排序”，点击表头升降序；汇总置底，按汇总分子/分母重算比率，禁止把门店百分比求和。固定门店列；列较多时使用原生横向滚动。</td></tr>
+<tr><td>指标说明与返回</td><td>标题备注／跳转返回按钮</td><td>公式与来源放在原生备注中。Demo 弹层仅模拟查看说明，原生端以版本提供的备注交互为准。返回使用跳转配置的返回按钮，面包屑可用富文本链接，不需要实现自定义路由。</td></tr>
+<tr><td>预留模块</td><td>富文本</td><td>市场营销、人力板块、资金看板及集团会员以简洁文本与浅色背景预留。</td></tr>
+</tbody></table>
+<h2>建议样式参数</h2>
+<p>以下是本 Demo 的设计取值，不是产品默认值：画布 <code>#F5F6F8</code>，组件背景 <code>#FFFFFF</code>，主色 <code>#1677FF</code>，正文 <code>#1F2329</code>，次要文字 <code>#86909C</code>，边框 <code>#E9EDF2</code>；卡片圆角 4px（如版本无圆角配置，使用默认直角），无渐变和卡片投影。页面标题 20px、分区标题 16px、组件标题 14px、指标值 28px、辅助文字 11–12px；卡片内边距 12px，组件间距 8–12px。增减色仅表示方向，不表示成本上升等于经营改善。</p>
+<h2>报表与参数传递</h2>
+<ol><li>首页 → 指标市场页：用指标看板“跳转”，传递指标标识、开始月份、结束月份及查询模式。指标看板不使用钻取。</li><li>市场页 → 门店页：用交叉表跳转传递市场标识，同时保留指标与日期参数；目标页配置对应的接收字段／查询条件。</li><li>可创建每指标独立目标报表；若希望复用统一指标页，则准备长表数据集或参数化指标选择。参数名是实施设计，不是 HTML URL 可以自动转换成 Quick BI 配置。</li><li>在仪表板编辑器切换移动端，解锁独立布局，按分区顺序排列，每行两个指标块。横屏沿用相同组件顺序并放宽容器，优先使用原生图表横屏查看；不依赖横竖屏切换后自动改变组件编排。</li></ol>
+<h2>数据侧必须配置的内容</h2>
+<ul><li>保留现有14项指标和来源要求。累计环比为前一等长期间，不能直接假设内置“月环比”就等价；需要在数据集／参数化 SQL 中明确两期边界，汇总后计算。</li><li>趋势应使用独立的最近12个月查询范围，不能被“当前单月”筛选截成一个点。当前 Demo 累计模式保留滚动等长区间，原生端需通过日期参数与数据集逻辑实现；确认单中这一规则仍待业务确认。</li><li>收入同比按去年同期间；比率指标在集团、市场、门店各级分别汇总基础量后重算。准备本期、上期、去年同期与比较值字段，不用静态格式替代计算。</li><li>可比同比仍为明确标注的模拟样本；演示默认2026年9月集团值8.1%。正式可比门店范围、计算公式仍待确认，不把模拟代码直接投产。</li><li>翻台率依照已确认的 Σ(日翻台率)/营业天数；营业天数和跨门店汇总规则仍应依确认单确定。</li></ul>
+<h2>原生验收清单</h2>
+<p>先在实际租户确认移动端功能与组件版本可用，再验收：320／390／430px竖屏及844×390横屏的无整页横向溢出；首页打开即可见指标数据，14项指标纵向浏览；单月与跨月查询；两级跳转保留期间；12个月标签和点击提示；本期及比较列表头排序；空值与负值；汇总口径；关闭或返回后的查询状态。Demo 的 HTML 自适应验证不能替代 Quick BI 租户、钉钉／企微实际入口的验收。</p>
+<h2>官方配置依据</h2>
+<ul>
+<li><a href="https://help.aliyun.com/zh/quick-bi/user-guide/create-a-report-on-a-mobile-terminal">搭建移动端报表</a>：移动画布及横向排列组件。</li>
+<li><a href="https://help.aliyun.com/zh/quick-bi/user-guide/perform-operations-on-a-mobile-terminal">移动端展示</a>：交互支持范围和移动工具提示。</li>
+<li><a href="https://help.aliyun.com/zh/quick-bi/user-guide/configure-a-kanban">指标看板</a>：主副模板、每行数量及样式。</li>
+<li><a href="https://help.aliyun.com/zh/quick-bi/user-guide/query-data-based-on-a-date-field">日期查询</a>与<a href="https://help.aliyun.com/zh/quick-bi/user-guide/configure-a-tab-widge">Tab 控件</a>：日期粒度、月区间和筛选范围。</li>
+<li><a href="https://help.aliyun.com/zh/quick-bi/user-guide/configure-a-cross-table-1">交叉表</a>：移动端排序、汇总和样式。</li>
+<li><a href="https://help.aliyun.com/zh/quick-bi/user-guide/hyperlink">跳转</a>与<a href="https://help.aliyun.com/zh/quick-bi/user-guide/configure-the-chart-title">标题与卡片</a>：参数化导航和备注。</li>
+</ul></body></html>

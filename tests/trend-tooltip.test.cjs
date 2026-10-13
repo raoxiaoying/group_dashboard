@@ -9,7 +9,7 @@ for(const id of Object.keys(D.metrics))for(const market of [null,...D.markets.ma
   targets=[];vm.runInContext('render()',ctx);
   const title=node(),value=node(),tip=node();tip.querySelector=s=>s==='.tooltip-month'?title:value;
   const dots=[...app.innerHTML.matchAll(/<circle data-point="(\d+)"/g)].map(m=>node({point:m[1]}));
-  const svg={querySelector:()=>tip,querySelectorAll:()=>dots};
+  const guide=node(),svg={querySelector:s=>s==='.trend-guide'?guide:tip,querySelectorAll:()=>dots};
   const markup=[...app.innerHTML.matchAll(/<rect class="trend-hit"([^>]+)>/g)];assert.equal(markup.length,12);
   targets=markup.map(m=>{const a=Object.fromEntries([...m[1].matchAll(/([\w-]+)="([^"]*)"/g)].map(x=>[x[1],x[2]]));const t=node({trendHit:a['data-trend-hit'],x:a['data-x'],y:a['data-y'],label:a['data-label'],value:a['data-value']});t.closest=()=>svg;return t});
   vm.runInContext('bind()',ctx);
@@ -18,7 +18,7 @@ for(const id of Object.keys(D.metrics))for(const market of [null,...D.markets.ma
     const f=D.format(id,D.value(id,market?D.select(market):D.stores,p));
     assert.equal(value.textContent,f.number+f.unit);
     assert(title.textContent.startsWith(D.monthKey(end).replace('-','年')+'月'));
-    assert.equal(tip.attrs.visibility,'visible');
+    assert.equal(tip.attrs.visibility,'visible');assert.equal(guide.attrs.visibility,'visible');assert.equal(guide.attrs.x1,Number(t.dataset.x));
     const [x,y]=tip.attrs.transform.match(/[\d.]+/g).map(Number);assert(x>=0&&x+184<=340&&y>=0&&y+48<=204);
     dots.forEach(dot=>assert.equal(dot.attrs.r,dot.dataset.point===String(i)?'5':'3.5'));
     checks++;
