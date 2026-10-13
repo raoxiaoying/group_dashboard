@@ -33,14 +33,19 @@ assert.equal(D.metrics.cagr.name,'同比');assert.equal(D.metrics.growth.name,'�
 for(const selected of [D.stores,...D.markets.map(m=>D.select(m.id)),...D.stores.map(s=>[s])]){
   for(const window of [p,{start:p.end,end:p.end},opening]){
     assert.equal(D.value('cagr',selected,window),D.value('yoy',selected,window));
-    assert.equal(D.value('growth',selected,window),null);
-    const c=D.comparisons('growth',selected,window);
-    for(const key of ['value','prev','year','mom','yoy'])assert.equal(c[key],null);
+    const v=D.value('growth',selected,window);assert(Number.isFinite(v));assert(v>0&&v<15);
+    assert.equal(v,D.value('growth',selected,window));
   }
 }
-assert.equal(D.format('growth',null).number,'待确认');
+assert.equal(D.format('growth',null).number,'—');
+const sampleBase=(selected,window)=>{const revenue=D.value('revenue',selected,window),v=D.value('growth',selected,window);return revenue/(1+v/100)};
+close(sampleBase(D.stores,p),D.stores.reduce((sum,store)=>sum+sampleBase([store],p),0));
+close(sampleBase(D.stores,p),D.markets.reduce((sum,m)=>sum+sampleBase(D.select(m.id),p),0));
+close(sampleBase(D.stores,p),[p.start,p.start+1,p.end].reduce((sum,month)=>sum+sampleBase(D.stores,{start:month,end:month}),0));
+assert.notEqual(D.value('growth',D.stores,p),D.value('growth',D.stores,{start:p.end,end:p.end}));
+assert.equal(D.value('growth',[newStore],{start:opening.start,end:opening.start}),null);
 assert.equal(D.format('cagr',null).number,'—');
 assert.notEqual(D.value('revenue',D.stores,p),D.value('receipts',D.stores,p));
 assert.notEqual(D.value('revenue',D.stores,p),D.value('revenue',D.stores,{start:p.end,end:p.end}));
 for(const id of Object.keys(D.metrics)){for(const market of [undefined,...D.markets.map(m=>m.id)]){for(const window of [p,{start:p.end,end:p.end}]){const v=D.value(id,D.select(market),window);assert(v===null||Number.isFinite(v));assert(D.format(id,v).number!=='NaN')}}}
-console.log('通过：14 项口径、集团/市场/门店汇总、月份累计、等长环比、同比、可比同比待确认、缺失基期和日期边界。');
+console.log('通过：14 项口径、集团/市场/门店汇总、月份累计、等长环比、同比、可比同比模拟数据、缺失基期和日期边界。');

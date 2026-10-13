@@ -16,7 +16,7 @@
     revenue:{name:'收入',caption:'除税收入',group:'IPO 数据',type:'money',source:'企迈收银系统',formula:'所选期间除税收入合计',field:'netRevenue'},
     turnover:{name:'翻台率',caption:'日翻台率合计 / 营业天数',group:'IPO 数据',type:'turns',source:'企迈收银系统',formula:'翻台率 = Σ(日翻台率) / 营业天数',note:'日翻台率 = 当日堂食客流量 ÷ 当日可用桌数。集团及市场按每日客流与桌数汇总计算；累计期间按营业天数加权。演示数据按各门店整月营业处理。'},
     cagr:{name:'同比',caption:'除税收入同比',group:'IPO 数据',type:'percent',source:'企迈收银系统',formula:'(本期除税收入 − 去年同期除税收入) ÷ 去年同期除税收入 × 100%',note:'单月对比去年同月；累计月份对比去年相同起止月份。基期缺失或不大于 0 时显示“—”。'},
-    growth:{name:'可比同比',caption:'除税收入可比同比',group:'IPO 数据',type:'percent',pending:true,source:'企迈收银系统',formula:'待确认',note:'可比门店范围及计算口径待确认，暂不展示数值。'},
+    growth:{name:'可比同比',caption:'除税收入可比同比（模拟）',group:'IPO 数据',type:'percent',source:'模拟数据；正式取数来源：企迈收银系统',formula:'正式计算公式待确认',note:'当前数值为独立生成的演示样本，按模拟样本收入汇总展示，不代表正式可比门店范围或业务计算口径。'},
     mom:{name:'收入环比',caption:'除税收入环比',group:'管理数据',type:'percent',source:'企迈收银系统',formula:'(本期除税收入 − 上期除税收入) ÷ 上期除税收入 × 100%',note:'单月与上月比较；累计月份与前一等长期间比较。'},
     yoy:{name:'收入同比',caption:'除税收入同比',group:'管理数据',type:'percent',source:'企迈收银系统',formula:'(本期除税收入 − 去年同期除税收入) ÷ 去年同期除税收入 × 100%'},
     foodRate:{name:'食材成本率',caption:'除税食材成本 / 除税收入',group:'管理数据',type:'percent',source:'食材成本：供应链系统；除税收入：企迈收银系统',formula:'除税食材成本 ÷ 除税收入 × 100%'},
@@ -50,7 +50,6 @@
   const change=(a,b)=>a!==null&&b>0?(a-b)/b*100:null;
   const shift=(p,delta)=>({start:p.start+delta,end:p.end+delta});
   function value(id,selected,p){
-    if(metrics[id].pending)return null;
     const a=aggregate(selected,p.start,p.end);if(!a.records)return null;
     const meta=metrics[id];if(meta.field)return a[meta.field];
     if(id==='turnover'){
@@ -62,6 +61,16 @@
       }
       return ratio(dailyTurnoverSum,businessDays,1);
     }
+    if(id==='growth'){
+      // Synthetic comparison samples only; no production comparable-store rule is assumed.
+      let sampleCurrent=0,samplePrior=0;
+      for(const store of selected)for(let month=p.start;month<=p.end;month++){
+        const r=record(store,month);if(!r)continue;
+        const sampleRate=6.8+(store.index%4-1.5)*1.4+2.4*Math.sin(month*.55+store.index*.3);
+        sampleCurrent+=r.netRevenue;samplePrior+=r.netRevenue/(1+sampleRate/100);
+      }
+      return change(sampleCurrent,samplePrior);
+    }
     if(id==='foodRate')return ratio(a.foodNet,a.netRevenue);
     if(id==='laborRate')return ratio(a.labor,a.netRevenue);
     if(id==='attendance')return ratio(a.actualHours,a.plannedHours);
@@ -72,7 +81,7 @@
     return change(a.netRevenue,b.netRevenue);
   }
   function comparisons(id,selected,p){const v=value(id,selected,p),prev=value(id,selected,shift(p,-(p.end-p.start+1))),year=value(id,selected,shift(p,-12));const diff=b=>v===null||b===null?null:metrics[id].type==='percent'?v-b:change(v,b);return {value:v,prev,year,mom:diff(prev),yoy:diff(year),unit:metrics[id].type==='percent'?'个百分点':'%'}}
-  function format(id,v){if(v===null||!Number.isFinite(v))return {number:metrics[id].pending?'待确认':'—',unit:''};const type=metrics[id].type;return {number:(type==='money'?v/10000:v).toLocaleString('zh-CN',{minimumFractionDigits:1,maximumFractionDigits:1}),unit:type==='money'?'万元':type==='percent'?'%':type==='hourly'?'元/小时':'次'}}
+  function format(id,v){if(v===null||!Number.isFinite(v))return {number:'—',unit:''};const type=metrics[id].type;return {number:(type==='money'?v/10000:v).toLocaleString('zh-CN',{minimumFractionDigits:1,maximumFractionDigits:1}),unit:type==='money'?'万元':type==='percent'?'%':type==='hourly'?'元/小时':'次'}}
   const select=market=>market?stores.filter(s=>s.market===market):stores;
   function validPeriod(start,end){return Number.isInteger(start)&&Number.isInteger(end)&&start>=earliest&&end<=latest&&start<=end}
   const api={monthKey,monthIndex,lastMonth,latest,earliest,markets,stores,metrics,groups,record,aggregate,value,comparisons,format,shift,change,select,validPeriod};

@@ -3,7 +3,7 @@ let period={start:D.latest,end:D.latest,mode:'single'}, route={id:null,market:nu
 const monthLabel=i=>D.monthKey(i).replace('-','年')+'月';
 const rangeLabel=p=>p.start===p.end?monthLabel(p.start):`${monthLabel(p.start)} — ${monthLabel(p.end)}`;
 const periodText=()=>rangeLabel(period);
-const sign=(v,unit='%',id)=>{if(D.metrics[id]?.pending)return '待确认';if(v===null)return '—';const rounded=Math.round(v*10)/10;return `${rounded>0?'+':''}${rounded.toFixed(1)}${unit}`};
+const sign=(v,unit='%',id)=>{if(v===null)return '—';const rounded=Math.round(v*10)/10;return `${rounded>0?'+':''}${rounded.toFixed(1)}${unit}`};
 const tone=v=>v===null?'':v>=0?'up':'down';
 const display=(id,v)=>{const f=D.format(id,v);return `${f.number}<small>${f.unit}</small>`};
 const textValue=(id,v)=>{const f=D.format(id,v);return f.number+f.unit};
@@ -31,7 +31,6 @@ function home(){return `<main class="home-content">${sectionTitle('01','经营�
 function breadcrumb(){const m=D.metrics[route.id],market=D.markets.find(x=>x.id===route.market);return `<nav class="breadcrumb" aria-label="页面路径"><a href="${href()}">集团首页</a><span>/</span>${market?`<a href="${href(route.id)}">${m.name} · 市场</a><span>/</span><span>${market.name}</span>`:`<span>${m.name} · 市场</span>`}</nav>`}
 function summary(id,stores,label){const m=D.metrics[id],c=D.comparisons(id,stores,period);return `<section class="card summary-card"><div class="card-heading"><h3>${label} · ${m.name}</h3>${infoButton(id)}</div><div class="summary-body"><p class="caption">${m.caption}</p><div class="summary-number">${display(id,c.value)}</div><div class="comparison-grid"><div><span>${m.type==='percent'?'较上期变化':'环比'}</span><b class="${tone(c.mom)}">${sign(c.mom,c.unit,id)}</b></div><div><span>${m.type==='percent'?'较去年同期变化':'同比'}</span><b class="${tone(c.yoy)}">${sign(c.yoy,c.unit,id)}</b></div></div></div></section>`}
 function trend(id,stores){
-  if(D.metrics[id].pending)return '<section class="card trend-card"><div class="card-heading"><h3>近 12 个月趋势</h3></div><div class="summary-body"><p class="caption">待确认</p></div></section>';
   const len=period.end-period.start+1,months=Array.from({length:12},(_,i)=>period.end-11+i),vals=months.map(end=>D.value(id,stores,{start:end-len+1,end})),valid=vals.filter(v=>v!==null),m=D.metrics[id],factor=m.type==='money'?10000:1;
   let min=Math.min(0,...valid)/factor,max=Math.max(0,...valid)/factor;if(max===min)max=min+1;const pad=(max-min)*.13;max+=pad;if(min<0)min-=pad;
   const coords=vals.map((v,i)=>({x:54+i*255/(months.length-1),y:v===null?null:154-(v/factor-min)/(max-min)*124}));

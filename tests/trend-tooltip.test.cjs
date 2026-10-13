@@ -7,7 +7,6 @@ let checks=0;
 for(const id of Object.keys(D.metrics))for(const market of [null,...D.markets.map(m=>m.id)])for(const mode of ['single','range']){
   ctx.location.hash=`#/metric/${id}${market?'/'+market:''}?start=${mode==='single'?'2026-09':'2026-07'}&end=2026-09&mode=${mode}`;
   targets=[];vm.runInContext('render()',ctx);
-  if(id==='growth'){assert(app.innerHTML.includes('待确认'));assert(!app.innerHTML.includes('data-trend-hit'));continue}
   const title=node(),value=node(),tip=node();tip.querySelector=s=>s==='.tooltip-month'?title:value;
   const dots=[...app.innerHTML.matchAll(/<circle data-point="(\d+)"/g)].map(m=>node({point:m[1]}));
   const svg={querySelector:()=>tip,querySelectorAll:()=>dots};
