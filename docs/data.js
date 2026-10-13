@@ -24,7 +24,7 @@
     receipts:{name:'收入',caption:'含税实收金额',group:'经营中心',type:'money',source:'企迈收银系统',formula:'所选期间含税实收金额合计',field:'grossRevenue'},
     cost:{name:'成本',caption:'含税食材成本',group:'经营中心',type:'money',source:'奥琦玮供应链系统',formula:'所选期间含税食材成本合计',field:'grossFood'},
     labor:{name:'人力',caption:'人力成本',group:'经营中心',type:'money',source:'红海云人事系统',formula:laborFormula,field:'labor'},
-    profit:{name:'实际利润',caption:'息税前利润 EBIT',group:'经营中心',type:'money',source:'金蝶财务系统',formula:'门店利润额 = 息税前利润 EBIT；所选期间汇总',field:'ebit',note:'以财务系统 EBIT 字段为准，不以收入减去食材、人力成本简化计算。'},
+    profit:{name:'利润',caption:'实际利润',group:'经营中心',type:'money',source:'金蝶财务系统',formula:'门店利润额 = 息税前利润 EBIT；所选期间汇总',field:'ebit',note:'以财务系统 EBIT 字段为准，不以收入减去食材、人力成本简化计算。'},
     attendance:{name:'排班',caption:'排班出勤率',group:'经营中心',type:'percent',source:'红海云人事系统',formula:'实际出勤工时 ÷ 排班出勤工时 × 100%'},
     hourly:{name:'人时',caption:'人时成本',group:'经营中心',type:'hourly',source:'红海云人事系统',formula:'人时成本 = 人力成本 ÷ 实际打卡工时',note:laborFormula+'。实际出勤工时与实际打卡工时独立取数。'}
   };
