@@ -53,3 +53,12 @@ for(const button of sortButtons){
 }
 D.comparisons=originalComparisons;
 console.log('通过：本期与环比表头点击升降序、负数和空值排序、汇总行固定、计算明细已移除。');
+
+for(const path of ['home','metric/growth','metric/growth/north']){
+ ctx.location.hash='#/'+path+'?start=2026-07&end=2026-09&mode=range';vm.runInContext('render()',ctx);
+ const html=element('app').innerHTML;assert(html.includes('可比同比'));assert(html.includes('待确认'));assert(!/增长率|增速|复合增长|CAGR/.test(html));
+ if(path!=='home'){assert(!html.includes('data-trend-hit'));assert(!/较集团 0|0.0pp|0.0个百分点/.test(html))}
+}
+vm.runInContext("openInfo('cagr')",ctx);assert(element('sheet').innerHTML.includes('去年同期'));assert(!element('sheet').innerHTML.includes('年数'));
+vm.runInContext("openInfo('growth')",ctx);assert(element('sheet').innerHTML.includes('待确认'));
+console.log('通过：同比与可比同比名称、待确认状态、旧口径说明清除。');
