@@ -9,11 +9,11 @@ assert(!D.validPeriod(D.latest,D.latest-1));assert(!D.validPeriod(D.latest,D.lat
 const a=D.aggregate(D.stores,p.start,p.end),b=D.aggregate(D.stores,p.start-3,p.end-3),y=D.aggregate(D.stores,p.start-12,p.end-12);
 close(D.value('revenue',D.stores,p),D.markets.reduce((sum,m)=>sum+D.value('revenue',D.select(m.id),p),0));
 for(const id of ['revenue','receipts','cost','labor','profit']){close(D.value(id,D.stores,p),D.stores.reduce((sum,s)=>sum+D.value(id,[s],p),0));close(D.value(id,D.stores,p),[p.start,p.start+1,p.end].reduce((sum,month)=>sum+D.value(id,D.stores,{start:month,end:month}),0))}
-close(D.value('foodRate',D.stores,p),a.foodNet/a.netRevenue*100);
-close(D.value('laborRate',D.stores,p),a.labor/a.netRevenue*100);
+close(D.value('foodRate',D.stores,p),a.grossFood/a.grossRevenue*100);
+close(D.value('laborRate',D.stores,p),a.labor/a.grossRevenue*100);
 close(D.value('attendance',D.stores,p),a.actualHours/a.plannedHours*100);
 close(D.value('hourly',D.stores,p),a.labor/a.punchHours);
-close(D.value('turnover',D.stores,p),a.guests/D.stores.reduce((sum,s)=>sum+s.tables,0)/92);
+close(D.value('turnover',D.stores,p),[p.start,p.start+1,p.end].reduce((sum,m)=>{const r=D.aggregate(D.stores,m,m);return sum+r.guests/r.tables},0)/92);
 const turnoverMonth=(stores,key,days)=>{const month=D.monthIndex(key),r=D.aggregate(stores,month,month);close(D.value('turnover',stores,{start:month,end:month}),r.guests/r.tables/days)};
 turnoverMonth(D.stores,'2026-09',30);
 turnoverMonth([D.stores[0]],'2026-07',31);
@@ -27,25 +27,22 @@ close(D.value('turnover',[newStore],opening),D.value('turnover',[newStore],{star
 assert.equal(D.value('turnover',[newStore],{start:opening.start,end:opening.start}),null);
 assert.equal(D.format('turnover',1).unit,'次');
 close(a.labor,a.wage+a.subsidy+a.social+a.fund);
-close(D.value('mom',D.stores,p),(a.netRevenue-b.netRevenue)/b.netRevenue*100);
-close(D.value('yoy',D.stores,p),(a.netRevenue-y.netRevenue)/y.netRevenue*100);
-assert.equal(D.metrics.cagr.name,'增长率');assert.equal(D.metrics.growth.name,'增速');
+close(D.value('cagr',D.stores,p),(a.netRevenue-y.netRevenue)/y.netRevenue*100);
+assert.equal(D.metrics.cagr.name,'收入增长率');assert.equal(D.metrics.growth.name,'利润增速');
 for(const selected of [D.stores,...D.markets.map(m=>D.select(m.id)),...D.stores.map(s=>[s])]){
   for(const window of [p,{start:p.end,end:p.end},opening]){
-    assert.equal(D.value('cagr',selected,window),D.value('yoy',selected,window));
-    const v=D.value('growth',selected,window);assert(Number.isFinite(v));assert(v>0&&v<15);
+    const prior=D.value('revenue',selected,D.shift(window,-12)),current=D.value('revenue',selected,window);
+    if(prior===null||current===null||prior===0)assert.equal(D.value('cagr',selected,window),null);else close(D.value('cagr',selected,window),(current-prior)/prior*100);
+    const v=D.value('growth',selected,window),profit=D.value('profit',selected,window),priorProfit=D.value('profit',selected,D.shift(window,-12));
+    if(profit===null||priorProfit===null||priorProfit===0)assert.equal(v,null);else close(v,(profit-priorProfit)/priorProfit*100);
     assert.equal(v,D.value('growth',selected,window));
   }
 }
 assert.equal(D.format('growth',null).number,'—');
-const sampleBase=(selected,window)=>{const revenue=D.value('revenue',selected,window),v=D.value('growth',selected,window);return revenue/(1+v/100)};
-close(sampleBase(D.stores,p),D.stores.reduce((sum,store)=>sum+sampleBase([store],p),0));
-close(sampleBase(D.stores,p),D.markets.reduce((sum,m)=>sum+sampleBase(D.select(m.id),p),0));
-close(sampleBase(D.stores,p),[p.start,p.start+1,p.end].reduce((sum,month)=>sum+sampleBase(D.stores,{start:month,end:month}),0));
 assert.notEqual(D.value('growth',D.stores,p),D.value('growth',D.stores,{start:p.end,end:p.end}));
 assert.equal(D.value('growth',[newStore],{start:opening.start,end:opening.start}),null);
 assert.equal(D.format('cagr',null).number,'—');
 assert.notEqual(D.value('revenue',D.stores,p),D.value('receipts',D.stores,p));
 assert.notEqual(D.value('revenue',D.stores,p),D.value('revenue',D.stores,{start:p.end,end:p.end}));
 for(const id of Object.keys(D.metrics)){for(const market of [undefined,...D.markets.map(m=>m.id)]){for(const window of [p,{start:p.end,end:p.end}]){const v=D.value(id,D.select(market),window);assert(v===null||Number.isFinite(v));assert(D.format(id,v).number!=='NaN')}}}
-console.log('通过：14 项口径、集团/市场/门店汇总、月份累计、等长环比、同比、可比同比模拟数据、缺失基期和日期边界。');
+console.log('通过：14 项口径、集团/市场/门店汇总、月份累计、等长环比、同比、实际利润增速、缺失基期和日期边界。');

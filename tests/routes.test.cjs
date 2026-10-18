@@ -3,7 +3,7 @@ const elements=new Map();const element=id=>{if(!elements.has(id))elements.set(id
 const ctx={DashboardData:D,document:{getElementById:element,querySelectorAll:()=>[],title:''},location:{hash:'#/home?start=2026-07&end=2026-09&mode=range'},window:{addEventListener(){}},URLSearchParams,scrollTo(){}};vm.createContext(ctx);vm.runInContext(fs.readFileSync('dist/app.js','utf8'),ctx);const home=element('app').innerHTML;
 assert.equal((home.match(/class="metric-link"/g)||[]).length,14);
 const links=[...home.matchAll(/class="metric-link" href="([^"]+)"/g)].map(x=>x[1]);let count=0;
-for(const link of links){ctx.location.hash=link;vm.runInContext('render()',ctx);const markets=element('app').innerHTML;assert(!/市场分析|period-note/.test(markets));assert(!ctx.document.title.includes('市场分析'));const rows=[...markets.matchAll(/class="market-row" href="([^"]+)"/g)].map(x=>x[1]);assert.equal(rows.length,3);for(const row of rows){assert(row.endsWith('start=2026-07&end=2026-09&mode=range'));ctx.location.hash=row;vm.runInContext('render()',ctx);const html=element('app').innerHTML;assert(html.includes('门店明细'));assert(!/市场分析|period-note/.test(html));assert.equal((html.match(/class="store-name"/g)||[]).length,4);assert(!/NaN|Infinity|undefined/.test(html));count++}}
+for(const link of links){ctx.location.hash=link;vm.runInContext('render()',ctx);const markets=element('app').innerHTML;assert(!/市场分析|period-note/.test(markets));assert(!ctx.document.title.includes('市场分析'));const rows=[...markets.matchAll(/class="market-row" href="([^"]+)"/g)].map(x=>x[1]);assert.equal(rows.length,3);for(const row of rows){assert(row.endsWith('start=2026-07&end=2026-09&mode=range'));ctx.location.hash=row;vm.runInContext('render()',ctx);const html=element('app').innerHTML;assert(html.includes('门店明细'));assert(!/市场分析|period-note/.test(html));assert.equal((html.match(/class="store-name"/g)||[]).length,row.includes('/storeCount/')?D.select(row.split('/')[3].split('?')[0],'storeCount').length:4);assert(!/NaN|Infinity|undefined/.test(html));count++}}
 console.log(`通过：首页 14 项指标 → 3 个市场 → ${count} 个门店表，累计月份全程保持。`);
 
 for(const mode of ['single','range']){
@@ -23,7 +23,7 @@ ctx.document.querySelectorAll=selector=>selector==='[data-sort]'?sortButtons:[];
 ctx.document.querySelector=selector=>sortButtons.find(b=>selector===`[data-sort="${b.dataset.sort}"]`);
 ctx.scrollY=0;
 const queryPeriod={start:D.monthIndex('2026-07'),end:D.monthIndex('2026-09')};
-for(const id of Object.keys(D.metrics)){
+for(const id of Object.keys(D.metrics).filter(id=>id!=='storeCount')){
   ctx.location.hash=`#/metric/${id}/east?start=2026-07&end=2026-09&mode=range`;
   vm.runInContext("sortKey='value';sort='desc';render()",ctx);
   for(const button of sortButtons){
@@ -32,7 +32,7 @@ for(const id of Object.keys(D.metrics)){
       const html=element('app').innerHTML;
       const names=[...html.matchAll(/class="store-name">([^<]+)</g)].map(x=>x[1]);
       const key=button.dataset.sort;
-      const rows=D.select('east').map(s=>({name:s.name,v:D.comparisons(id,[s],queryPeriod)[key]}));
+      const rows=D.select('east',id).map(s=>({name:s.name,v:D.comparisons(id,[s],queryPeriod)[key]}));
       const expected=rows.filter(r=>r.v!==null).sort((a,b)=>(direction==='asc'?1:-1)*(a.v-b.v)).concat(rows.filter(r=>r.v===null)).map(r=>r.name);
       assert.deepEqual(names,expected,`${id} ${key} ${direction}`);
       assert(html.includes(`aria-sort="${direction==='asc'?'ascending':'descending'}"><button class="column-sort" data-sort="${key}"`));
@@ -56,11 +56,11 @@ console.log('通过：本期与环比表头点击升降序、负数和空值排�
 
 for(const path of ['home','metric/growth','metric/growth/north']){
  ctx.location.hash='#/'+path+'?start=2026-07&end=2026-09&mode=range';vm.runInContext('render()',ctx);
- const html=element('app').innerHTML;assert(html.includes('增速'));assert(html.includes('增速指标口径'));assert(html.includes('可比同比（模拟）'));assert(!html.includes('待确认'));assert(!/复合增长|CAGR/.test(html));
+ const html=element('app').innerHTML;assert(html.includes('增速'));assert(html.includes('增速指标口径'));assert(html.includes('实际利润同比增长率'));assert(!html.includes('待确认'));assert(!/复合增长|CAGR/.test(html));
  if(path!=='home')assert.equal((html.match(/data-trend-hit=/g)||[]).length,12);
 }
 vm.runInContext("openInfo('cagr')",ctx);assert(element('sheet').innerHTML.includes('去年同期'));assert(!element('sheet').innerHTML.includes('年数'));
-vm.runInContext("openInfo('growth')",ctx);assert(element('sheet').innerHTML.includes('待确认'));
-console.log('通过：增长率与增速名称、模拟数值与趋势、正式口径保留待确认。');
+vm.runInContext("openInfo('growth')",ctx);assert(element('sheet').innerHTML.includes('本期利润'));assert(!element('sheet').innerHTML.includes('待确认'));
+console.log('通过：增长率与增速名称、模拟数值与趋势、利润公式已明确。');
 
 for(const path of ['home','metric/cagr','metric/cagr/east']){ctx.location.hash='#/'+path+'?start=2026-09&end=2026-09&mode=single';vm.runInContext('render()',ctx);assert(element('app').innerHTML.includes('增长率指标口径'));}

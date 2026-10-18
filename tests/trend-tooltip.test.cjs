@@ -14,8 +14,8 @@ for(const id of Object.keys(D.metrics))for(const market of [null,...D.markets.ma
   targets=markup.map(m=>{const a=Object.fromEntries([...m[1].matchAll(/([\w-]+)="([^"]*)"/g)].map(x=>[x[1],x[2]]));const t=node({trendHit:a['data-trend-hit'],x:a['data-x'],y:a['data-y'],label:a['data-label'],value:a['data-value']});t.closest=()=>svg;return t});
   vm.runInContext('bind()',ctx);
   targets.forEach((t,i)=>{
-    t.onclick();const end=D.monthIndex('2026-09')-11+i,p={start:end-(mode==='single'?0:2),end};
-    const f=D.format(id,D.value(id,market?D.select(market):D.stores,p));
+    t.onclick();const end=D.monthIndex('2026-09')-11+i,p={start:end-(mode==='single'||D.metrics[id].type==='count'?0:2),end};
+    const f=D.format(id,D.value(id,D.select(market,id),p));
     assert.equal(value.textContent,f.number+f.unit);
     assert(title.textContent.startsWith(D.monthKey(end).replace('-','年')+'月'));
     assert.equal(tip.attrs.visibility,'visible');assert.equal(guide.attrs.visibility,'visible');assert.equal(guide.attrs.x1,Number(t.dataset.x));
