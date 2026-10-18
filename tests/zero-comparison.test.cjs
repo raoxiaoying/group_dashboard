@@ -7,7 +7,8 @@ for(const value of [0,-0,0.01,-0.01,0.049,-0.049,-0.05]){
  D.comparisons=(...args)=>({...base.comparisons(...args),mom:value,yoy:value});
  for(const route of ['home',...Object.keys(D.metrics).flatMap(id=>[`metric/${id}`,`metric/${id}/east`])]){
   ctx.location.hash=`#/${route}?start=2026-09&end=2026-09&mode=single`;run('render()');
-  const comparisons=[...app.innerHTML.matchAll(/<(b|td) class="([^"]*)">(0\.0(?:%|pp|个百分点)?)<\/(?:b|td)>/g)];
+  assert(!/\bpp\b|便士/i.test(app.innerHTML),`${route}: inconsistent unit`);
+  const comparisons=[...app.innerHTML.matchAll(/<(b|td) class="([^"]*)">(0\.0(?:%|百分点)?)<\/(?:b|td)>/g)];
   assert(comparisons.length>0);assert(comparisons.every(m=>m[2]==='neutral'),`${route}: zero color`);
  }
 }
