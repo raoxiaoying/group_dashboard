@@ -32,7 +32,7 @@ vm.createContext(ctx);vm.runInContext(fs.readFileSync('dist/app.js','utf8'),ctx)
 const home=element('app').innerHTML;
 for(const id of ids){
  const card=home.split('<article class="metric-tile">').find(x=>x.includes(`data-info="${id}"`));
- assert(card.includes('环比 '));assert(card.includes('同比 '));assert(card.includes('同环比单位：百分点'));assert(card.indexOf('环比 ')<card.indexOf('同比 '));
+ assert(card.includes('环比 '));assert(card.includes('同比 '));assert(card.includes('class="point-unit notranslate"'));assert(!card.includes('comparison-unit'));assert(card.indexOf('环比 ')<card.indexOf('同比 '));
  for(const market of ['', '/east']){
   ctx.location.hash=`#/metric/${id}${market}?start=2026-07&end=2026-09&mode=range`;vm.runInContext('render()',ctx);
   const html=element('app').innerHTML;assert(html.includes('环比（百分点）'));assert(html.includes('同比（百分点）'));
