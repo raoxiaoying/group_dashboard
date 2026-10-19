@@ -8,7 +8,7 @@ assert.equal(D.monthKey(D.lastMonth(new Date('2026-09-30T16:00:00Z'))),'2026-09'
 assert(!D.validPeriod(D.latest,D.latest-1));assert(!D.validPeriod(D.latest,D.latest+1));assert(D.validPeriod(D.latest,D.latest));
 const a=D.aggregate(D.stores,p.start,p.end),b=D.aggregate(D.stores,p.start-3,p.end-3),y=D.aggregate(D.stores,p.start-12,p.end-12);
 close(D.value('revenue',D.stores,p),D.markets.reduce((sum,m)=>sum+D.value('revenue',D.select(m.id),p),0));
-for(const id of ['revenue','receipts','cost','labor','profit']){close(D.value(id,D.stores,p),D.stores.reduce((sum,s)=>sum+D.value(id,[s],p),0));close(D.value(id,D.stores,p),[p.start,p.start+1,p.end].reduce((sum,month)=>sum+D.value(id,D.stores,{start:month,end:month}),0))}
+for(const id of ['revenue','receipts','cost','labor','profit','profitAmount']){close(D.value(id,D.stores,p),D.stores.reduce((sum,s)=>sum+D.value(id,[s],p),0));close(D.value(id,D.stores,p),[p.start,p.start+1,p.end].reduce((sum,month)=>sum+D.value(id,D.stores,{start:month,end:month}),0))}
 close(D.value('foodRate',D.stores,p),a.grossFood/a.grossRevenue*100);
 close(D.value('laborRate',D.stores,p),a.labor/a.grossRevenue*100);
 close(D.value('attendance',D.stores,p),a.actualHours/a.plannedHours*100);
@@ -45,4 +45,4 @@ assert.equal(D.format('cagr',null).number,'—');
 assert.notEqual(D.value('revenue',D.stores,p),D.value('receipts',D.stores,p));
 assert.notEqual(D.value('revenue',D.stores,p),D.value('revenue',D.stores,{start:p.end,end:p.end}));
 for(const id of Object.keys(D.metrics)){for(const market of [undefined,...D.markets.map(m=>m.id)]){for(const window of [p,{start:p.end,end:p.end}]){const v=D.value(id,D.select(market),window);assert(v===null||Number.isFinite(v));assert(D.format(id,v).number!=='NaN')}}}
-console.log('通过：14 项口径、集团/市场/门店汇总、月份累计、等长环比、同比、实际利润增速、缺失基期和日期边界。');
+console.log('通过：16 项口径、集团/市场/门店汇总、月份累计、等长环比、同比、实际利润增速、缺失基期和日期边界。');

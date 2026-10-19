@@ -1,4 +1,6 @@
 const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),D=require('../dist/data.js');
+assert.deepEqual(D.groups[0].ids,['storeCount','turnover','revenue','profitAmount','cagr','growth']);
+assert.equal(D.metrics.profitAmount.name,'利润额');assert.equal(D.groups[2].name,'运营中心');
 const elements=new Map(),el=id=>{if(!elements.has(id))elements.set(id,{innerHTML:'',addEventListener(){}});return elements.get(id)};
 const buttons=['value','mom','yoy'].map(sort=>({dataset:{sort},focus(){}}));
 const ctx={DashboardData:D,document:{getElementById:el,querySelectorAll:s=>s==='[data-sort]'?buttons:[],querySelector:s=>buttons.find(b=>s===`[data-sort="${b.dataset.sort}"]`)},window:{addEventListener(){}},location:{hash:'#/home'},URLSearchParams,scrollY:0,scrollTo(){}};
@@ -6,6 +8,10 @@ vm.createContext(ctx);vm.runInContext(fs.readFileSync('dist/app.js','utf8'),ctx)
 for(const [mode,start,end] of [['single','2026-09','2026-09'],['range','2026-07','2026-09'],['annual','2026-01','2026-09'],['annualRange','2025-01','2026-09']]){
  const query=`start=${start}&end=${end}&mode=${mode}`,p={start:D.monthIndex(start),end:D.monthIndex(end)};
  ctx.location.hash='#/home?'+query;run('render()');const home=el('app').innerHTML;
+ assert(!home.includes('经营中心'));
+ const tileIds=[...home.matchAll(/data-info="([^"]+)"/g)].map(m=>m[1]);assert.deepEqual(tileIds.slice(0,6),D.groups[0].ids);
+ for(const selected of [D.stores,...D.markets.map(m=>D.select(m.id)),...D.stores.map(s=>[s])]){assert.deepEqual(D.comparisons('profitAmount',selected,p),D.comparisons('profit',selected,p));const total=D.aggregate(selected,p.start,p.end);assert.equal(D.value('revenue',selected,p),total.records?total.netRevenue:null);}
+
  for(const id of ids){
   const card=home.split('<article class="metric-tile">').find(s=>s.includes(`data-info="${id}"`));assert(card.includes('同比 '));assert(card.includes('环比 '));
   for(const selected of [D.stores,D.select('east'),[D.stores[0]]]){
@@ -38,4 +44,4 @@ for(const id of ['cagr','growth']){
  assert(run(`sign(-2.1,'%', '${id}')`).includes('rate-arrow down'));assert(run(`sign(-2.1,'%', '${id}')`).includes('-2.1%'));
 }
 assert(!run("display('revenue',2.1)").includes('rate-arrow'));
-console.log('通过：IPO四项及经营中心六项首页及穿透页同比环比、百分比/百分点口径、四种查询模式、同比排序、缺失值，以及增长率/增速正负零值箭头。');
+console.log('通过：IPO六项及运营中心六项首页及穿透页同比环比、百分比/百分点口径、四种查询模式、同比排序、缺失值，以及增长率/增速正负零值箭头。');

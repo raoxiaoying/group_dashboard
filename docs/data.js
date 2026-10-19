@@ -29,19 +29,20 @@
     revenue:{name:'收入',caption:'除税收入',group:'IPO 数据',type:'money',source:'企迈收银系统',formula:'所选期间除税收入合计',field:'netRevenue'},
     turnover:{name:'翻台率',caption:'日翻台率合计 / 营业天数',group:'IPO 数据',type:'turns',source:'企迈收银系统',formula:'翻台率 = Σ(日翻台率) / 营业天数',note:'日翻台率 = 当日堂食客流量 ÷ 当日可用桌数。集团及市场按每日客流与桌数汇总计算；累计期间按营业天数加权。演示数据按各门店整月营业处理。'},
     cagr:{name:'收入增长率',caption:'除税收入同比',group:'IPO 数据',type:'percent',source:'企迈收银系统',formula:'(本期除税收入 − 去年同期除税收入) ÷ 去年同期除税收入 × 100%',note:'单月对比去年同月；累计月份对比去年相同起止月份。基期缺失或不大于 0 时显示“—”。'},
-    growth:{name:'利润增速',caption:'实际利润同比增长率',group:'IPO 数据',type:'percent',source:'金蝶财务系统',formula:'(本期利润 − 去年同期利润) ÷ 去年同期利润 × 100%',note:'利润使用经营中心的实际利润字段；集团、市场先汇总利润再计算。去年同期利润为0或缺失时显示“—”；负基期按公式保留分母符号。同比、环比为相较去年同期和前一等长期间增速的百分点差值。'},
+    growth:{name:'利润增速',caption:'实际利润同比增长率',group:'IPO 数据',type:'percent',source:'金蝶财务系统',formula:'(本期利润 − 去年同期利润) ÷ 去年同期利润 × 100%',note:'利润使用运营中心的实际利润字段；集团、市场先汇总利润再计算。去年同期利润为0或缺失时显示“—”；负基期按公式保留分母符号。同比、环比为相较去年同期和前一等长期间增速的百分点差值。'},
     grossMargin:{name:'毛利率',caption:'含税毛利 / 含税收入',group:'管理数据',type:'percent',source:'含税收入：企迈收银系统；含税食材成本：奥琦玮供应链系统',formula:'(含税收入 − 含税食材成本) ÷ 含税收入 × 100%'},
     foodRate:{name:'食材成本率',caption:'含税食材成本 / 含税收入',group:'管理数据',type:'percent',source:'含税食材成本：奥琦玮供应链系统；含税收入：企迈收银系统',formula:'含税食材成本 ÷ 含税收入 × 100%'},
     laborRate:{name:'人工成本率',caption:'人工成本 / 含税收入',group:'管理数据',type:'percent',source:'人工成本：红海云人事系统；含税收入：企迈收银系统',formula:'人工成本 ÷ 含税收入 × 100%',note:'沿用原确认单成本范围：工资 + 社保补贴实发 + 企业社保金额 + 企业公积金金额，不对人工成本另行加税。'},
-    profitRate:{name:'利润率',caption:'实际利润 / 含税收入',group:'管理数据',type:'percent',source:'实际利润：金蝶财务系统；含税收入：企迈收银系统',formula:'实际利润 ÷ 含税收入 × 100%',note:'与经营中心“利润”共用实际利润字段；当前为模拟数据，正式字段需由财务确认。'},
-    receipts:{name:'收入',caption:'含税实收金额',group:'经营中心',type:'money',source:'企迈收银系统',formula:'所选期间含税实收金额合计',field:'grossRevenue'},
-    cost:{name:'成本',caption:'含税食材成本',group:'经营中心',type:'money',source:'奥琦玮供应链系统',formula:'所选期间含税食材成本合计',field:'grossFood'},
-    labor:{name:'人力',caption:'人力成本',group:'经营中心',type:'money',source:'红海云人事系统',formula:laborFormula,field:'labor'},
-    profit:{name:'利润',caption:'实际利润',group:'经营中心',type:'money',source:'金蝶财务系统',formula:'所选期间实际利润合计',field:'actualProfit',note:'实际利润使用独立模拟字段，不以收入减去食材、人工成本简化计算；正式字段需由财务确认。'},
-    attendance:{name:'排班',caption:'排班出勤率',group:'经营中心',type:'percent',source:'红海云人事系统',formula:'实际出勤工时 ÷ 排班出勤工时 × 100%'},
-    hourly:{name:'人时',caption:'人时成本',group:'经营中心',type:'hourly',source:'红海云人事系统',formula:'人时成本 = 人力成本 ÷ 实际打卡工时',note:laborFormula+'。实际出勤工时与实际打卡工时独立取数。'}
+    profitRate:{name:'利润率',caption:'实际利润 / 含税收入',group:'管理数据',type:'percent',source:'实际利润：金蝶财务系统；含税收入：企迈收银系统',formula:'实际利润 ÷ 含税收入 × 100%',note:'与运营中心“利润”共用实际利润字段；当前为模拟数据，正式字段需由财务确认。'},
+    receipts:{name:'收入',caption:'含税实收金额',group:'运营中心',type:'money',source:'企迈收银系统',formula:'所选期间含税实收金额合计',field:'grossRevenue'},
+    cost:{name:'成本',caption:'含税食材成本',group:'运营中心',type:'money',source:'奥琦玮供应链系统',formula:'所选期间含税食材成本合计',field:'grossFood'},
+    labor:{name:'人力',caption:'人力成本',group:'运营中心',type:'money',source:'红海云人事系统',formula:laborFormula,field:'labor'},
+    profitAmount:{name:'利润额',caption:'实际利润',group:'IPO 数据',type:'money',source:'金蝶财务系统',formula:'所选期间实际利润合计',field:'actualProfit',note:'实际利润使用独立模拟字段，不以收入减去食材、人工成本简化计算；正式字段需由财务确认。'},
+    profit:{name:'利润',caption:'实际利润',group:'运营中心',type:'money',source:'金蝶财务系统',formula:'所选期间实际利润合计',field:'actualProfit',note:'实际利润使用独立模拟字段，不以收入减去食材、人工成本简化计算；正式字段需由财务确认。'},
+    attendance:{name:'排班',caption:'排班出勤率',group:'运营中心',type:'percent',source:'红海云人事系统',formula:'实际出勤工时 ÷ 排班出勤工时 × 100%'},
+    hourly:{name:'人时',caption:'人时成本',group:'运营中心',type:'hourly',source:'红海云人事系统',formula:'人时成本 = 人力成本 ÷ 实际打卡工时',note:laborFormula+'。实际出勤工时与实际打卡工时独立取数。'}
   };
-  const groups=[{name:'IPO 数据',ids:['storeCount','turnover','cagr','growth']},{name:'管理数据',ids:['grossMargin','foodRate','laborRate','profitRate']},{name:'经营中心',ids:['receipts','cost','labor','profit','attendance','hourly']}];
+  const groups=[{name:'IPO 数据',ids:['storeCount','turnover','revenue','profitAmount','cagr','growth']},{name:'管理数据',ids:['grossMargin','foodRate','laborRate','profitRate']},{name:'运营中心',ids:['receipts','cost','labor','profit','attendance','hourly']}];
   function record(store,month){
     if(month<historyStart||month>latest||month<store.opened||(store.closed!=null&&month>store.closed))return null;
     const i=store.index,t=month-monthIndex('2023-01');

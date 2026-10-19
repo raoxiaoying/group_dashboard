@@ -1,10 +1,10 @@
 const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),D=require('../dist/data.js');
 const elements=new Map();const element=id=>{if(!elements.has(id))elements.set(id,{innerHTML:'',addEventListener(){},showModal(){},close(){},querySelector(){return element('child')},querySelectorAll(){return[]}});return elements.get(id)};
 const ctx={DashboardData:D,document:{getElementById:element,querySelectorAll:()=>[],title:''},location:{hash:'#/home?start=2026-07&end=2026-09&mode=range'},window:{addEventListener(){}},URLSearchParams,scrollTo(){}};vm.createContext(ctx);vm.runInContext(fs.readFileSync('dist/app.js','utf8'),ctx);const home=element('app').innerHTML;
-assert.equal((home.match(/class="metric-link"/g)||[]).length,14);
+assert.equal((home.match(/class="metric-link"/g)||[]).length,16);
 const links=[...home.matchAll(/class="metric-link" href="([^"]+)"/g)].map(x=>x[1]);let count=0;
 for(const link of links){ctx.location.hash=link;vm.runInContext('render()',ctx);const markets=element('app').innerHTML;assert(!/市场分析|period-note/.test(markets));assert(!ctx.document.title.includes('市场分析'));const rows=[...markets.matchAll(/class="market-row" href="([^"]+)"/g)].map(x=>x[1]);assert.equal(rows.length,3);for(const row of rows){assert(row.endsWith('start=2026-07&end=2026-09&mode=range'));ctx.location.hash=row;vm.runInContext('render()',ctx);const html=element('app').innerHTML;assert(html.includes('门店明细'));assert(!/市场分析|period-note/.test(html));assert.equal((html.match(/class="store-name"/g)||[]).length,row.includes('/storeCount/')?D.select(row.split('/')[3].split('?')[0],'storeCount').length:4);assert(!/NaN|Infinity|undefined/.test(html));count++}}
-console.log(`通过：首页 14 项指标 → 3 个市场 → ${count} 个门店表，累计月份全程保持。`);
+console.log(`通过：首页 16 项指标 → 3 个市场 → ${count} 个门店表，累计月份全程保持。`);
 
 for(const mode of ['single','range']){
   ctx.location.hash=`#/metric/revenue?start=${mode==='single'?'2026-09':'2026-07'}&end=2026-09&mode=${mode}`;
