@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),D=require('../dist/data.js');
-assert.deepEqual(D.groups[0].ids,['storeCount','turnover','revenue','profitAmount','cagr','growth']);
-assert.equal(D.metrics.profitAmount.name,'利润额');assert.equal(D.groups[2].name,'运营中心');
+assert.deepEqual(D.groups[0].ids,['storeCount','turnover','revenue','profitAmount']);
+assert.equal(D.metrics.profitAmount.name,'利润');assert.equal(D.groups[2].name,'运营中心');
 const elements=new Map(),el=id=>{if(!elements.has(id))elements.set(id,{innerHTML:'',addEventListener(){}});return elements.get(id)};
 const buttons=['value','mom','yoy'].map(sort=>({dataset:{sort},focus(){}}));
 const ctx={DashboardData:D,document:{getElementById:el,querySelectorAll:s=>s==='[data-sort]'?buttons:[],querySelector:s=>buttons.find(b=>s===`[data-sort="${b.dataset.sort}"]`)},window:{addEventListener(){}},location:{hash:'#/home'},URLSearchParams,scrollY:0,scrollTo(){}};
@@ -9,7 +9,7 @@ for(const [mode,start,end] of [['single','2026-09','2026-09'],['range','2026-07'
  const query=`start=${start}&end=${end}&mode=${mode}`,p={start:D.monthIndex(start),end:D.monthIndex(end)};
  ctx.location.hash='#/home?'+query;run('render()');const home=el('app').innerHTML;
  assert(!home.includes('经营中心'));
- const tileIds=[...home.matchAll(/data-info="([^"]+)"/g)].map(m=>m[1]);assert.deepEqual(tileIds.slice(0,6),D.groups[0].ids);
+ const tileIds=[...home.matchAll(/data-info="([^"]+)"/g)].map(m=>m[1]);assert.deepEqual(tileIds.slice(0,4),D.groups[0].ids);
  for(const selected of [D.stores,...D.markets.map(m=>D.select(m.id)),...D.stores.map(s=>[s])]){assert.deepEqual(D.comparisons('profitAmount',selected,p),D.comparisons('profit',selected,p));const total=D.aggregate(selected,p.start,p.end);assert.equal(D.value('revenue',selected,p),total.records?total.netRevenue:null);}
 
  for(const id of ids){
@@ -44,4 +44,20 @@ for(const id of ['cagr','growth']){
  assert(run(`sign(-2.1,'%', '${id}')`).includes('rate-arrow down'));assert(run(`sign(-2.1,'%', '${id}')`).includes('-2.1%'));
 }
 assert(!run("display('revenue',2.1)").includes('rate-arrow'));
-console.log('通过：IPO六项及运营中心六项首页及穿透页同比环比、百分比/百分点口径、四种查询模式、同比排序、缺失值，以及增长率/增速正负零值箭头。');
+console.log('通过：IPO四项及运营中心六项首页及穿透页同比环比、百分比/百分点口径、四种查询模式、同比排序、缺失值，以及增长率/增速正负零值箭头。');
+// Related rates follow the parent metric's period and market instead of remaining on the homepage.
+for(const [mode,start,end] of [['single','2026-09','2026-09'],['range','2026-07','2026-09'],['annualRange','2025-01','2026-09']]){
+ const query=`start=${start}&end=${end}&mode=${mode}`,p={start:D.monthIndex(start),end:D.monthIndex(end)};
+ ctx.location.hash='#/home?'+query;run('render()');const home=el('app').innerHTML;
+ assert.deepEqual([...home.matchAll(/data-info="([^"]+)"/g)].map(x=>x[1]),D.groups.flatMap(g=>g.ids));
+ for(const id of ['cagr','growth','grossMargin','profitRate'])assert(!home.includes(`data-info="${id}"`));
+ assert(home.includes('含集团会员，等待需求补充'));assert(!home.includes('<h2>集团会员</h2>'));assert(home.includes('<h3>人力资源</h3>'));assert(home.includes('<h2>资金看板</h2>'));
+ for(const [parent,ids] of [['revenue',['cagr']],['profitAmount',['growth','grossMargin']],['profit',['growth','grossMargin']]])for(const market of [null,...D.markets.map(m=>m.id)]){
+  ctx.location.hash=`#/metric/${parent}${market?'/'+market:''}?${query}`;run('render()');const html=el('app').innerHTML;
+  const related=html.split('<div class="related-metrics"')[1].split('<section class="card '+(market?'store-card':'markets-card')+'">')[0];
+  assert.deepEqual([...related.matchAll(/data-info="([^"]+)"/g)].map(x=>x[1]),ids);
+  for(const id of ids){const block=related.split('data-info="'+id+'"')[1].split('</section>')[0],c=D.comparisons(id,D.select(market,id),p);assert(block.includes(`data-number="${D.format(id,c.value).number}"`));for(const key of ['mom','yoy']){ctx.relatedNumber=c[key];assert(block.includes(run("sign(relatedNumber,'pp')")));}}
+  assert(html.includes(mode==='annualRange'?'年度趋势':'近 12 个月趋势'));
+ }
+}
+console.log('通过：管理两项成本率、增长率/利润增速/毛利率归入相应穿透页，并按月份、年度和市场重算；会员归营销，资金预留。');

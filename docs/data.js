@@ -37,12 +37,12 @@
     receipts:{name:'收入',caption:'含税实收金额',group:'运营中心',type:'money',source:'企迈收银系统',formula:'所选期间含税实收金额合计',field:'grossRevenue'},
     cost:{name:'成本',caption:'含税食材成本',group:'运营中心',type:'money',source:'奥琦玮供应链系统',formula:'所选期间含税食材成本合计',field:'grossFood'},
     labor:{name:'人力',caption:'人力成本',group:'运营中心',type:'money',source:'红海云人事系统',formula:laborFormula,field:'labor'},
-    profitAmount:{name:'利润额',caption:'实际利润',group:'IPO 数据',type:'money',source:'金蝶财务系统',formula:'所选期间实际利润合计',field:'actualProfit',note:'实际利润使用独立模拟字段，不以收入减去食材、人工成本简化计算；正式字段需由财务确认。'},
+    profitAmount:{name:'利润',caption:'实际利润',group:'IPO 数据',type:'money',source:'金蝶财务系统',formula:'所选期间实际利润合计',field:'actualProfit',note:'实际利润使用独立模拟字段，不以收入减去食材、人工成本简化计算；正式字段需由财务确认。'},
     profit:{name:'利润',caption:'实际利润',group:'运营中心',type:'money',source:'金蝶财务系统',formula:'所选期间实际利润合计',field:'actualProfit',note:'实际利润使用独立模拟字段，不以收入减去食材、人工成本简化计算；正式字段需由财务确认。'},
     attendance:{name:'排班',caption:'排班出勤率',group:'运营中心',type:'percent',source:'红海云人事系统',formula:'实际出勤工时 ÷ 排班出勤工时 × 100%'},
     hourly:{name:'人时',caption:'人时成本',group:'运营中心',type:'hourly',source:'红海云人事系统',formula:'人时成本 = 人力成本 ÷ 实际打卡工时',note:laborFormula+'。实际出勤工时与实际打卡工时独立取数。'}
   };
-  const groups=[{name:'IPO 数据',ids:['storeCount','turnover','revenue','profitAmount','cagr','growth']},{name:'管理数据',ids:['grossMargin','foodRate','laborRate','profitRate']},{name:'运营中心',ids:['receipts','cost','labor','profit','attendance','hourly']}];
+  const groups=[{name:'IPO 数据',ids:['storeCount','turnover','revenue','profitAmount']},{name:'管理数据',ids:['laborRate','foodRate']},{name:'运营中心',ids:['receipts','cost','labor','profit','attendance','hourly']}];
   function record(store,month){
     if(month<historyStart||month>latest||month<store.opened||(store.closed!=null&&month>store.closed))return null;
     const i=store.index,t=month-monthIndex('2023-01');

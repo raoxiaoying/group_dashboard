@@ -55,6 +55,13 @@ for(const [mode,start,end] of [['single','2026-09','2026-09'],['range','2026-07'
  assert(html.includes(`class="back-link" href="#/${market?'metric/storeCount':'home'}?${query}"`));
  for(const title of ['在营门店数量','新开门店数量','闭店门店数量'])assert(html.includes(title));
  assert.equal((html.match(/class="card summary-card"/g)||[]).length,3);
+ assert(html.includes('门店分布地图'));assert(html.includes('不代表门店地址'));
+ const counts=D.storeCounts(selected,period);assert(html.includes(`<strong>${counts.storeOpened-counts.storeClosed}家</strong>`));
+ const map=html.split('class="store-map"')[1].split('</svg>')[0];
+ const mapMarkets=market?D.markets.filter(m=>m.id===market.slice(1)):D.markets;
+ assert.equal((map.match(/<a href=/g)||[]).length,mapMarkets.length);
+ for(const m of mapMarkets){assert(map.includes(`href="#/metric/storeCount/${m.id}?${query}"`));assert(map.includes(`${m.name}，在营${D.value('storeCount',D.select(m.id,'storeCount'),period)}家`));}
+
  if(!market){
   const table=html.split('<table class="store-count-table">')[1].split('</table>')[0];
   assert.equal((table.match(/<th>同比<\/th>/g)||[]).length,3);assert.equal((table.match(/<th>环比<\/th>/g)||[]).length,3);

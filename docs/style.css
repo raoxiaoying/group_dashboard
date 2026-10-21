@@ -31,3 +31,7 @@
 
 
 .point-unit:after{content:"pp"}.point-unit{display:inline;white-space:nowrap}
+
+.store-map{display:block;width:100%;max-height:380px}.store-map circle{fill:#3370ff;stroke:white;stroke-width:2}.store-map rect{fill:#fff;stroke:#c8d9f4}.store-map text{fill:#2452bb;font-size:12px}.store-map a:hover circle{fill:#1746d9}.map-note{padding:0 12px 12px;font-size:11px;line-height:1.7;color:#86909c}.map-note a{color:#3370ff}.count-net{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;padding:12px;margin-bottom:12px;background:#fff;border:1px solid var(--line);border-radius:4px;font-size:14px}.count-net strong{font-size:22px}.count-net span{font-size:11px;color:#86909c}
+
+.related-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}.related-metrics>.card:only-child{grid-column:1/-1}@media(max-width:480px){.related-metrics{grid-template-columns:1fr}}

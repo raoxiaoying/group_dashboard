@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),D=require('../dist/data.js');
 const ids=['grossMargin','foodRate','laborRate','profitRate'];
-assert.deepEqual(D.groups[1].ids,ids);
+assert.deepEqual(D.groups[1].ids,['laborRate','foodRate']);
 assert.deepEqual(ids.map(id=>D.metrics[id].name),['毛利率','食材成本率','人工成本率','利润率']);
 const close=(a,b)=>a===null||b===null?assert.equal(a,b):assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
 const expected=a=>!a.records?Object.fromEntries(ids.map(id=>[id,null])):({grossMargin:(a.grossRevenue-a.grossFood)/a.grossRevenue*100,foodRate:a.grossFood/a.grossRevenue*100,laborRate:a.labor/a.grossRevenue*100,profitRate:a.actualProfit/a.grossRevenue*100});
@@ -32,7 +32,7 @@ vm.createContext(ctx);vm.runInContext(fs.readFileSync('dist/app.js','utf8'),ctx)
 const home=element('app').innerHTML;
 for(const id of ids){
  const card=home.split('<article class="metric-tile">').find(x=>x.includes(`data-info="${id}"`));
- assert(card.includes('环比 '));assert(card.includes('同比 '));assert(card.includes('class="point-unit notranslate"'));assert(!card.includes('comparison-unit'));assert(card.indexOf('环比 ')<card.indexOf('同比 '));
+ if(D.groups[1].ids.includes(id)){assert(card);assert(card.includes('环比 '));assert(card.includes('同比 '));assert(card.includes('class="point-unit notranslate"'));assert(!card.includes('comparison-unit'));assert(card.indexOf('环比 ')<card.indexOf('同比 '));}else assert.equal(card,undefined);
  for(const market of ['', '/east']){
   ctx.location.hash=`#/metric/${id}${market}?start=2026-07&end=2026-09&mode=range`;vm.runInContext('render()',ctx);
   const html=element('app').innerHTML;assert(html.includes('环比（百分点）'));assert(html.includes('同比（百分点）'));
